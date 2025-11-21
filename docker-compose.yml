@@ -1,0 +1,41 @@
+version: '3.9'
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    volumes:
+      - .:/var/www/html
+    container_name: laravel-php
+    command: sh -c "while true; do php artisan schedule:run --verbose --no-interaction; sleep 30; done & php-fpm"
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - php
+    container_name: laravel-nginx
+
+
+  mysql:
+    image: mysql:8.0
+    container_name: laravel-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: dolar
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: 6f1gTKdQlAcqbKCV0GX5
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
